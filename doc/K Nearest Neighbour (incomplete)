@@ -1,0 +1,19 @@
+// Para busqueda de los N vecinos mas cercanos
+ pcl::PointXYZ searchPoint(1,2,3);
+
+//number of neightbourg to look for
+int knn=5;
+
+//The resultant indices of the neighboring points (must be resized to k a priori!)
+std::vector<int> NNidSC(1);
+
+//The resultant squared distances to the neighboring points (must be resized to k a priori!)
+std::vector<float> NNdistSC(1);
+
+
+
+if( kdtreeSCN.nearestKSearch(centre,knn,NNidSC,NNdistSC)>0 ) //it return the number of neighbourgs found
+{
+
+
+}              

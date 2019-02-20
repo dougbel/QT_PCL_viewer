@@ -1,0 +1,13 @@
+
+
+Using
+
+	std::vector<int> aux_ids;
+        aux_ids.reserve( 255 );
+
+this helps user specify the number minimum of capacity of a vector, this help to allocate enough memory instead of beeing incrementing it and reallocating data during execution. More info in https://www.geeksforgeeks.org/using-stdvectorreserve-whenever-possible/
+
+
+or since the definition
+
+	std::vector<float> mags_c(sampleSize);

@@ -1,0 +1,70 @@
+//sampling a point cloud around a given point and a radius
+
+
+//Given a point cloud:
+pcl::PointCloud<pcl::PointXYZ>::Ptr cloud
+
+
+//A Kdtree is then generated to perform an efficient range search:
+pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
+kdtree.setInputCloud (cloud);
+
+
+//Then, given a point and a radius:
+pcl::PointXYZ searchPoint(1,2,3);
+float radius = 4;
+
+
+
+//You can get all the points that are at a distance radius from the point searchPoint:
+std::vector<int> pointIdxRadiusSearch; //to store index of surrounding points 
+std::vector<float> pointRadiusSquaredDistance; // to store distance to surrounding points
+
+
+
+/////////////////////FLITERING, OPTION 1 /////////////////////
+if ( kdtree.radiusSearch (searchPoint, radius, pointIdxRadiusSearch, pointRadiusSquaredDistance) > 0 )
+{
+    for (size_t i = 0; i < pointIdxRadiusSearch.size (); ++i)
+        std::cout << "    "  <<   cloud->points[ pointIdxRadiusSearch[i] ].x 
+                << " " << cloud->points[ pointIdxRadiusSearch[i] ].y 
+                << " " << cloud->points[ pointIdxRadiusSearch[i] ].z 
+                << " (squared distance: " << pointRadiusSquaredDistance[i] << ")" << std::endl;
+}
+
+//You can print all the surrounding points and their distance to the searchPoint to check the code functional correctness.
+//Finally, create a cloud with the obtained points:
+pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_cluster (new pcl::PointCloud<pcl::PointXYZ>);
+for (size_t i = 0; i < pointIdxRadiusSearch.size (); ++i)
+    cloud_cluster->points.push_back(cloud->points[ pointIdxRadiusSearch[i] ]);
+cloud_cluster->width = cloud_cluster->points.size ();
+cloud_cluster->height = 1;
+cloud_cluster->is_dense = true;
+
+
+
+
+
+
+/////////////////////FLITERING OPTION 2 /////////////////////
+pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_cluster (new pcl::PointCloud<pcl::PointXYZ>);
+if ( kdtree.radiusSearch (searchPoint, radius, pointIdxRadiusSearch, pointRadiusSquaredDistance) > 0 )
+{
+    pcl::ExtractIndices<pcl::PointXYZ> extract;
+    pcl::PointIndices::Ptr cIndices (new pcl::PointIndices);
+    cIndices->indices=pointIdxRadiusSearch;
+    extract.setInputCloud(cloud);
+    extract.setIndices(cIndices);
+    extract.filter(*cloud_cluster);
+}
+
+
+
+
+
+
+
+
+
+
+

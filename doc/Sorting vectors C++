@@ -1,0 +1,14 @@
+Interesting c++ functions to arrange
+
+	std::sort(aux->begin(),aux->end(),sortPointsProb);
+
+
+where 
+	std::vector<sampledPoints> * aux;
+
+
+and
+	
+	inline bool sortPointsProb(const sampledPoints &one, const sampledPoints &two){
+		return one.counter<two.counter;
+	}

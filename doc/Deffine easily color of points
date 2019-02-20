@@ -1,0 +1,11 @@
+
+
+// Ayuda a definir un tipo de color para una nube de puntos, lo que permite no tener que recorrer la misma a mano
+
+ boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer_;
+pcl::PointCloud<pcl::PointXYZ>::Ptr smallScene;
+
+[...]
+
+pcl::visualization::PointCloudColorHandlerCustom<PointT> Yellow (smallScene, 255, 255, 0);
+viewer_->addPointCloud(smallScene, Yellow, "rad");

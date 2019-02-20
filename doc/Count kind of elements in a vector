@@ -1,0 +1,16 @@
+
+
+Count the number of elements in a vector that match with a characteristic
+
+	int mycount = std::count_if (aux->begin(), aux->end(), IsZero);
+
+where 
+
+	std::vector<sampledPoints> * aux;
+
+and
+
+
+	inline bool IsZero (const sampledPoints &s) { 
+		return s.counter==0; 
+	}
