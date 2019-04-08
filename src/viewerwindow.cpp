@@ -16,6 +16,13 @@ WindowViewer::WindowViewer(QWidget *parent)
     viewer->initCameraParameters ();
     viewer->setBackgroundColor(.7,.7,.7);
     clickResetCamera();
+    
+    viewer->addSphere(pcl::PointXYZ(0.951572, 0.556679, 1.20407), 0.2, 0.5, 0.5, 0.0,"circle");
+    viewer->setShapeRenderingProperties (pcl::visualization::PCL_VISUALIZER_REPRESENTATION, pcl::visualization::PCL_VISUALIZER_REPRESENTATION_WIREFRAME, "circle"); 
+    
+    viewer->addSphere(pcl::PointXYZ(0.951572, 0.556679, 1.20407), 0.01, 0.5, 0.0, 0.0,"center");
+    viewer->setShapeRenderingProperties (pcl::visualization::PCL_VISUALIZER_REPRESENTATION, pcl::visualization::PCL_VISUALIZER_REPRESENTATION_WIREFRAME, "center"); 
+    
     ui->qvtkWidget->update();
 
     ui->table_cloud_color->insertRow( 0 );
