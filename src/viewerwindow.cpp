@@ -3,8 +3,8 @@
 
 WindowViewer::WindowViewer(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::viewerWindow) {
-    ui->setupUi(this);
 
+    ui->setupUi(this);
 
 
     // Set up the QVTK window
@@ -49,6 +49,10 @@ WindowViewer::WindowViewer(QWidget *parent)
 
     connect(ui->table_cloud, SIGNAL(cellClicked(int,int)), this, SLOT(clickCloudTable(int,int)));
 
+    ui->table_cloud->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    connect(ui->table_cloud, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(rightClickCloudTable(const QPoint&)));
+
     connect(ui->table_cloud_color, SIGNAL(cellClicked(int,int)), this, SLOT(clickColorCloudTable(int,int)));
 
     connect(ui->spinPointSize, SIGNAL(valueChanged (int)), this, SLOT(changeSpinPointSize(int)));
@@ -63,7 +67,7 @@ WindowViewer::WindowViewer(QWidget *parent)
 
 }
 
-void WindowViewer::setCloudColor( PointCloudT::Ptr cloud, Qt::GlobalColor q_color){
+void WindowViewer::colorCloud( PointCloudT::Ptr cloud, Qt::GlobalColor q_color){
 
     if(q_color == Qt::black){
         for (size_t i = 0; i < cloud->size(); i++) {
@@ -137,14 +141,12 @@ void WindowViewer::clickLoadPCLFile() {
     
     for(int i =0; i<clouds_qt.size(); i++){
       if( clouds_qt[i].file_name.compare(cloud_name) == 0 ) {
-	QMessageBox::critical(this, "Failed", "Point cloud already in list",QMessageBox::Ok);
-	return;
+        QMessageBox::critical(this, "Failed", "Point cloud already in list",QMessageBox::Ok);
+        return;
       }
     }
     
-    
     clouds_qt.push_back(CloudQtData(filepath));
-
 
     //table update
     int n_column =  ui->table_cloud->rowCount();
@@ -195,6 +197,7 @@ void WindowViewer::changeSpinPointSize (int value)
   }
 
   ui->qvtkWidget->update ();
+
 }
 
 void WindowViewer::clickColorCloudTable(int row, int col){
@@ -213,11 +216,15 @@ void WindowViewer::clickColorCloudTable(int row, int col){
         default: q_color = Qt::black; break;
     }
 
-    this->setCloudColor( clouds_qt[cloud_selected].cloud, q_color );
+    clouds_qt[cloud_selected].cloud_color_qt = q_color ;
+
+    this->colorCloud( clouds_qt[cloud_selected].cloud, q_color );
+
     viewer->updatePointCloud (  clouds_qt[cloud_selected].cloud, clouds_qt[cloud_selected].file_name );
-    ui->qvtkWidget->update ();
 
     ui->table_cloud->item( cloud_selected, 0 )->setBackgroundColor( q_color );
+    ui->qvtkWidget->update();
+
 
 }
 
@@ -228,5 +235,65 @@ void WindowViewer::clickCloudTable(int row, int col){
     ui->table_cloud_color->show();
 
 }
+
+void WindowViewer::rightClickCloudTable(const QPoint& pos) // this is a slot
+{
+
+    QMenu myMenu;
+
+
+    QMenu* submenuColors = myMenu.addMenu( "Change Color" );
+
+    QAction* pAction1 = new QAction("Densify", this);
+    QAction* pAction3 = new QAction("Delete", this);
+
+    myMenu.addAction(pAction1);
+    myMenu.addAction(pAction3);
+
+    QAction* actionYellowColor = submenuColors->addAction( "Yellow" );
+
+    QPoint globalPos = ui->table_cloud->mapToGlobal(pos);
+    QAction* selectedItem = myMenu.exec(globalPos);
+
+    cloud_selected = ui->table_cloud->currentRow();
+
+    if(selectedItem == pAction1)
+    {
+        clickSubmenuDensify( );
+    }
+    else if(selectedItem == pAction3)
+    {
+        clickSubmenuRemove();
+    }
+}
+
+void WindowViewer::clickSubmenuDensify(){
+    
+    Densifier sampler;
+    
+    clouds_qt[ this->cloud_selected ].cloud = sampler.densecloud(clouds_qt[ this->cloud_selected ].file_name, 100000);
+
+
+    this->colorCloud( clouds_qt[cloud_selected].cloud, clouds_qt[cloud_selected].cloud_color_qt );
+    
+    viewer->updatePointCloud(clouds_qt[ this->cloud_selected ].cloud, clouds_qt[ this->cloud_selected ].file_name);
+
+    ui->qvtkWidget->update();
+}
+
+
+void WindowViewer::clickSubmenuRemove(){
+
+    viewer->removePointCloud(clouds_qt[ this->cloud_selected ].file_name);
+    ui->qvtkWidget->update();
+
+    clouds_qt.erase( clouds_qt.begin() + this->cloud_selected );
+
+    ui->table_cloud->removeRow( this->cloud_selected );
+    ui->table_cloud_color->hide();
+    ui->label_cloud->setText( "" );
+}
+
+
 
 WindowViewer::~WindowViewer() { delete ui; }

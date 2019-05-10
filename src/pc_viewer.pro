@@ -19,7 +19,8 @@ SOURCES += main.cpp\
 
 HEADERS  += viewerwindow.h \
     clouddata.h \
-    cloudqtdata.h
+    cloudqtdata.h \
+    utilcloud.h
 
 FORMS    += viewerwindow.ui
 

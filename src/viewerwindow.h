@@ -24,6 +24,7 @@
 // Visualization Toolkit (VTK)
 #include <vtkRenderWindow.h>
 
+#include "utilcloud.h"
 #include "cloudqtdata.h"
 
 typedef pcl::PointXYZRGBA PointT;
@@ -56,6 +57,12 @@ public Q_SLOTS:
 
     void clickCloudTable(int row, int col);
 
+    void rightClickCloudTable(const QPoint& pos);
+
+    void clickSubmenuDensify();
+
+    void clickSubmenuRemove();
+
     void changeSpinPointSize(int value);
 
 
@@ -72,7 +79,7 @@ protected:
 private:
     Ui::viewerWindow *ui;
 
-    void setCloudColor( PointCloudT::Ptr cloud, Qt::GlobalColor q_color);
+    void colorCloud( PointCloudT::Ptr cloud, Qt::GlobalColor q_color);
 };
 
 #endif // VIEWERWINDOW_H
