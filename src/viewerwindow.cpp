@@ -53,6 +53,7 @@ WindowViewer::WindowViewer(QWidget *parent)
 
     connect(ui->table_cloud, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(rightClickCloudTable(const QPoint&)));
 
+
     connect(ui->table_cloud_color, SIGNAL(cellClicked(int,int)), this, SLOT(clickColorCloudTable(int,int)));
 
     connect(ui->spinPointSize, SIGNAL(valueChanged (int)), this, SLOT(changeSpinPointSize(int)));
@@ -242,15 +243,12 @@ void WindowViewer::rightClickCloudTable(const QPoint& pos) // this is a slot
     QMenu myMenu;
 
 
-    QMenu* submenuColors = myMenu.addMenu( "Change Color" );
-
     QAction* pAction1 = new QAction("Densify", this);
     QAction* pAction3 = new QAction("Delete", this);
 
     myMenu.addAction(pAction1);
     myMenu.addAction(pAction3);
 
-    QAction* actionYellowColor = submenuColors->addAction( "Yellow" );
 
     QPoint globalPos = ui->table_cloud->mapToGlobal(pos);
     QAction* selectedItem = myMenu.exec(globalPos);
@@ -265,6 +263,11 @@ void WindowViewer::rightClickCloudTable(const QPoint& pos) // this is a slot
     {
         clickSubmenuRemove();
     }
+
+
+
+
+
 }
 
 void WindowViewer::clickSubmenuDensify(){
@@ -284,14 +287,26 @@ void WindowViewer::clickSubmenuDensify(){
 
 void WindowViewer::clickSubmenuRemove(){
 
-    viewer->removePointCloud(clouds_qt[ this->cloud_selected ].file_name);
-    ui->qvtkWidget->update();
+    QMessageBox::StandardButton reply;
 
-    clouds_qt.erase( clouds_qt.begin() + this->cloud_selected );
+    std::stringstream message;
 
-    ui->table_cloud->removeRow( this->cloud_selected );
-    ui->table_cloud_color->hide();
-    ui->label_cloud->setText( "" );
+    message << " Delete \"" << clouds_qt[ this->cloud_selected ].file_name <<"\" ?";
+
+    reply = QMessageBox::question(this, "Confirm delete action", QString::fromStdString(message.str()), QMessageBox::No|QMessageBox::Yes, QMessageBox::No);
+    if (reply == QMessageBox::Yes)
+    {
+        //Erase point cloud
+        viewer->removePointCloud(clouds_qt[ this->cloud_selected ].file_name);
+        ui->qvtkWidget->update();
+
+        clouds_qt.erase( clouds_qt.begin() + this->cloud_selected );
+
+        ui->table_cloud->removeRow( this->cloud_selected );
+        ui->table_cloud_color->hide();
+        ui->label_cloud->setText( "" );
+    }
+
 }
 
 
