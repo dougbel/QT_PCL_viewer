@@ -132,7 +132,7 @@ void WindowViewer::clickLoadPCLFile() {
 
     QString filepath = QFileDialog::getOpenFileName(this,
                                                 tr("Open Point Cloud File"), "",
-                                                tr("PCL file (*.pcd);;PCL file (*.ply);;All Files (*)"));
+                                                tr("PCL file (*.pcd *.ply);;All Files (*)"));
 
     if (filepath.isEmpty ())
         return;
