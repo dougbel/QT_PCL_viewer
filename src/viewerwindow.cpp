@@ -17,11 +17,11 @@ WindowViewer::WindowViewer(QWidget *parent)
     viewer->setBackgroundColor(.7,.7,.7);
     clickResetCamera();
     
-    viewer->addSphere(pcl::PointXYZ(0.951572, 0.556679, 1.20407), 0.2, 0.5, 0.5, 0.0,"circle");
-    viewer->setShapeRenderingProperties (pcl::visualization::PCL_VISUALIZER_REPRESENTATION, pcl::visualization::PCL_VISUALIZER_REPRESENTATION_WIREFRAME, "circle"); 
+    //viewer->addSphere(pcl::PointXYZ(0.951572, 0.556679, 1.20407), 0.2, 0.5, 0.5, 0.0,"circle");
+    //viewer->setShapeRenderingProperties (pcl::visualization::PCL_VISUALIZER_REPRESENTATION, pcl::visualization::PCL_VISUALIZER_REPRESENTATION_WIREFRAME, "circle");
     
-    viewer->addSphere(pcl::PointXYZ(0.951572, 0.556679, 1.20407), 0.01, 0.5, 0.0, 0.0,"center");
-    viewer->setShapeRenderingProperties (pcl::visualization::PCL_VISUALIZER_REPRESENTATION, pcl::visualization::PCL_VISUALIZER_REPRESENTATION_WIREFRAME, "center"); 
+    //viewer->addSphere(pcl::PointXYZ(0.951572, 0.556679, 1.20407), 0.01, 0.5, 0.0, 0.0,"center");
+    //viewer->setShapeRenderingProperties (pcl::visualization::PCL_VISUALIZER_REPRESENTATION, pcl::visualization::PCL_VISUALIZER_REPRESENTATION_WIREFRAME, "center");
     
     ui->qvtkWidget->update();
 
@@ -161,6 +161,10 @@ void WindowViewer::clickLoadPCLFile() {
 
     viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, ui->spinPointSize->value(), clouds_qt.back().file_name);
 
+    if (clouds_qt.back().type_cloud == "ply"){
+        viewer->addPolygonMesh(clouds_qt.back().cloud_mesh,clouds_qt.back().file_name+clouds_qt.back().type_cloud,0);
+    }
+
     ui->qvtkWidget->update();
 }
 
@@ -241,68 +245,140 @@ void WindowViewer::rightClickCloudTable(const QPoint& pos) // this is a slot
 {
 
     QMenu myMenu;
+    int row;
+
+    row = ui->table_cloud->currentRow();
 
 
-    QAction* pAction1 = new QAction("Densify", this);
-    QAction* pAction3 = new QAction("Delete", this);
+    QAction* act_hide_mesh = new QAction("Hide", this);
+    QAction* act_show_mesh = new QAction("Show", this);
+    QAction* act_densify_pc = new QAction("Densify", this);
+    QAction* act_hide_pc = new QAction("Hide", this);
+    QAction* act_show_pc = new QAction("Show", this);
+    QAction* act_delete = new QAction("Delete", this);
 
-    myMenu.addAction(pAction1);
-    myMenu.addAction(pAction3);
+    if (clouds_qt[ row ].type_cloud == "ply")
+    {
+        QMenu* menu_mesh = myMenu.addMenu(tr("&Mesh"));
+
+        menu_mesh->addAction(act_hide_mesh);
+        menu_mesh->addAction(act_show_mesh);
+    }
+
+    QMenu* menu_pc = myMenu.addMenu(tr("&PC"));
+
+    if (clouds_qt[ row ].type_cloud == "ply")
+        menu_pc->addAction(act_densify_pc);
+
+    menu_pc->addAction(act_hide_pc);
+    menu_pc->addAction(act_show_pc);
+
+
+    myMenu.addAction(act_delete);
 
 
     QPoint globalPos = ui->table_cloud->mapToGlobal(pos);
     QAction* selectedItem = myMenu.exec(globalPos);
 
-    cloud_selected = ui->table_cloud->currentRow();
 
-    if(selectedItem == pAction1)
+
+    if(selectedItem == act_densify_pc)
     {
-        clickSubmenuDensify( );
+        clickSubmenuDensify( row );
     }
-    else if(selectedItem == pAction3)
+    else if(selectedItem == act_hide_pc)
     {
-        clickSubmenuRemove();
+        clickHidePC( row );
     }
-
-
-
-
+    else if(selectedItem == act_show_pc)
+    {
+        clickShowPC( row );
+    }
+    else if(selectedItem == act_hide_mesh)
+    {
+        clickHideMesh( row );
+    }
+    else if(selectedItem == act_show_mesh)
+    {
+        clickShowMesh( row );
+    }
+    else if(selectedItem == act_delete)
+    {
+        clickSubmenuRemove( row );
+    }
 
 }
 
-void WindowViewer::clickSubmenuDensify(){
-    
-    Densifier sampler;
-    
-    clouds_qt[ this->cloud_selected ].cloud = sampler.densecloud(clouds_qt[ this->cloud_selected ].file_name, 100000);
+void WindowViewer::clickShowMesh(int num_cloud){
 
-
-    this->colorCloud( clouds_qt[cloud_selected].cloud, clouds_qt[cloud_selected].cloud_color_qt );
-    
-    viewer->updatePointCloud(clouds_qt[ this->cloud_selected ].cloud, clouds_qt[ this->cloud_selected ].file_name);
+    viewer->addPolygonMesh(clouds_qt[ num_cloud ].cloud_mesh,clouds_qt[ num_cloud ].file_name+clouds_qt[ num_cloud ].type_cloud,0);
 
     ui->qvtkWidget->update();
 }
 
 
-void WindowViewer::clickSubmenuRemove(){
+void WindowViewer::clickHideMesh(int num_cloud){
+
+    viewer->removePolygonMesh(clouds_qt[ num_cloud ].file_name+clouds_qt[ num_cloud ].type_cloud);
+
+    ui->qvtkWidget->update();
+}
+
+
+void WindowViewer::clickShowPC(int num_cloud){
+
+
+    viewer->addPointCloud(clouds_qt[ num_cloud ].cloud, clouds_qt[ num_cloud ].file_name);
+
+    ui->qvtkWidget->update();
+}
+
+
+void WindowViewer::clickHidePC(int num_cloud){
+
+    viewer->removePointCloud(clouds_qt[ num_cloud ].file_name);
+
+    ui->qvtkWidget->update();
+}
+
+void WindowViewer::clickSubmenuDensify(int num_cloud){
+    
+    Densifier sampler;
+    
+    clouds_qt[ num_cloud ].cloud = sampler.densecloud(clouds_qt[ num_cloud ].file_path, 100000);
+
+
+    this->colorCloud( clouds_qt[num_cloud].cloud, clouds_qt[num_cloud].cloud_color_qt );
+    
+    viewer->updatePointCloud(clouds_qt[ num_cloud ].cloud, clouds_qt[ num_cloud ].file_name);
+
+    ui->qvtkWidget->update();
+}
+
+
+void WindowViewer::clickSubmenuRemove(int num_cloud){
 
     QMessageBox::StandardButton reply;
 
     std::stringstream message;
 
-    message << " Delete \"" << clouds_qt[ this->cloud_selected ].file_name <<"\" ?";
+    message << " Delete \"" << clouds_qt[ num_cloud ].file_name <<"\" ?";
 
     reply = QMessageBox::question(this, "Confirm delete action", QString::fromStdString(message.str()), QMessageBox::No|QMessageBox::Yes, QMessageBox::No);
     if (reply == QMessageBox::Yes)
     {
         //Erase point cloud
-        viewer->removePointCloud(clouds_qt[ this->cloud_selected ].file_name);
+        viewer->removePointCloud(clouds_qt[ num_cloud ].file_name);
+
+        if (clouds_qt.back().type_cloud == "ply"){
+            viewer->removePolygonMesh(clouds_qt[ num_cloud ].file_name+clouds_qt.back().type_cloud);
+        }
+
         ui->qvtkWidget->update();
 
-        clouds_qt.erase( clouds_qt.begin() + this->cloud_selected );
+        clouds_qt.erase( clouds_qt.begin() + num_cloud );
 
-        ui->table_cloud->removeRow( this->cloud_selected );
+        ui->table_cloud->removeRow( num_cloud );
         ui->table_cloud_color->hide();
         ui->label_cloud->setText( "" );
     }

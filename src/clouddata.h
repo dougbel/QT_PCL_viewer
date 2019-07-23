@@ -6,6 +6,7 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/io/ply_io.h>
+#include <pcl/io/vtk_lib_io.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/filters/filter.h>
 
@@ -21,7 +22,10 @@ public:
     std::string file_path;
     std::string file_name;
 
+    std::string type_cloud;
+
     pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud;
+    pcl::PolygonMesh cloud_mesh;
 
     CloudData( std::string file_path );
 

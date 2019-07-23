@@ -59,9 +59,17 @@ public Q_SLOTS:
 
     void rightClickCloudTable(const QPoint& pos);
 
-    void clickSubmenuDensify();
+    void clickSubmenuDensify(int num_cloud);
 
-    void clickSubmenuRemove();
+    void clickShowMesh(int num_cloud);
+
+    void clickHideMesh(int num_cloud);
+
+    void clickShowPC(int num_cloud);
+
+    void clickHidePC(int num_cloud);
+
+    void clickSubmenuRemove(int num_cloud);
 
     void changeSpinPointSize(int value);
 
@@ -73,7 +81,7 @@ protected:
 
     vector <CloudQtData> clouds_qt;
 
-    int cloud_selected;
+    int cloud_selected;         //TODO erase!!!
 
 
 private:
