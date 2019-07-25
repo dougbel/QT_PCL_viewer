@@ -6,6 +6,8 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QMovie>
+#include <QDropEvent>
+#include <QMimeData>
 
 
 #include <boost/filesystem.hpp>
@@ -81,13 +83,24 @@ protected:
 
     vector <CloudQtData> clouds_qt;
 
-    int cloud_selected;         //TODO erase!!!
 
+
+    void dropEvent(QDropEvent *e);
+
+    void dragEnterEvent(QDragEnterEvent *e);
 
 private:
     Ui::viewerWindow *ui;
 
+    int cloud_selected;
+
     void colorCloud( PointCloudT::Ptr cloud, Qt::GlobalColor q_color);
+
+
+    void ctrlLoadFile(QString filepath);
+
+    bool isValidFile(QString filepath);
+
 };
 
 #endif // VIEWERWINDOW_H

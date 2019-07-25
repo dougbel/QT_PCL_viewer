@@ -53,6 +53,7 @@ WindowViewer::WindowViewer(QWidget *parent)
 
     connect(ui->table_cloud, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(rightClickCloudTable(const QPoint&)));
 
+    setAcceptDrops(true);
 
     connect(ui->table_cloud_color, SIGNAL(cellClicked(int,int)), this, SLOT(clickColorCloudTable(int,int)));
 
@@ -66,6 +67,42 @@ WindowViewer::WindowViewer(QWidget *parent)
     //get camera position
     connect(ui->btn_resetCamera, SIGNAL(clicked()), this, SLOT(clickResetCamera()));
 
+}
+
+void WindowViewer::dropEvent(QDropEvent *e)
+{
+    foreach (const QUrl &url, e->mimeData()->urls()) {
+        QString filepath = url.toLocalFile();        
+
+        boost::filesystem::path p(filepath.toStdString());
+
+        QString filename = QString::fromStdString( p.filename().string() );
+
+        if( isValidFile(filepath) ){
+            QMessageBox::information(this, "Loading", "Loading dropped file:\n"+filename,QMessageBox::Ok);
+            ctrlLoadFile( filepath );
+        }
+        else{
+            QMessageBox::critical(this, "Loading", "No valid file type:\n"+filename,QMessageBox::Ok);
+        }
+    }
+
+}
+
+bool WindowViewer::isValidFile(QString filepath){
+    string file_extension  = boost::filesystem::extension(filepath.toStdString());
+
+    if(file_extension == ".ply" || file_extension == ".pcd" )
+        return true;
+
+    return false;
+}
+
+void WindowViewer::dragEnterEvent(QDragEnterEvent *e)
+{
+    if (e->mimeData()->hasUrls()) {
+        e->acceptProposedAction();
+    }
 }
 
 void WindowViewer::colorCloud( PointCloudT::Ptr cloud, Qt::GlobalColor q_color){
@@ -137,17 +174,23 @@ void WindowViewer::clickLoadPCLFile() {
     if (filepath.isEmpty ())
         return;
     
+    ctrlLoadFile( filepath );
+
+}
+
+void WindowViewer::ctrlLoadFile(QString filepath){
     boost::filesystem::path pathObj(filepath.toStdString());
     string cloud_name = pathObj.filename().string();
-    
+
     for(int i =0; i<clouds_qt.size(); i++){
       if( clouds_qt[i].file_name.compare(cloud_name) == 0 ) {
         QMessageBox::critical(this, "Failed", "Point cloud already in list",QMessageBox::Ok);
         return;
       }
     }
-    
-    clouds_qt.push_back(CloudQtData(filepath));
+
+
+    clouds_qt.push_back(CloudQtData(filepath));    
 
     //table update
     int n_column =  ui->table_cloud->rowCount();
@@ -156,7 +199,7 @@ void WindowViewer::clickLoadPCLFile() {
     ui->table_cloud->setItem(n_column, 1, new QTableWidgetItem( clouds_qt.back().file_name_qt) );
     ui->table_cloud->item(n_column,0)->setBackgroundColor(Qt::black);
     ui->table_cloud->item(n_column,0)->setFlags( ui->table_cloud->item(n_column,0)->flags() & ~Qt::ItemIsSelectable );
-    
+
     viewer->addPointCloud(clouds_qt.back().cloud, clouds_qt.back().file_name);
 
     viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, ui->spinPointSize->value(), clouds_qt.back().file_name);
@@ -167,6 +210,9 @@ void WindowViewer::clickLoadPCLFile() {
 
     ui->qvtkWidget->update();
 }
+
+
+
 
 void WindowViewer::clickGetCamera() {
 
