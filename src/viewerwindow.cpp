@@ -12,7 +12,6 @@ WindowViewer::WindowViewer(QWidget *parent)
     ui->qvtkWidget->SetRenderWindow(viewer->getRenderWindow());
     viewer->setupInteractor(ui->qvtkWidget->GetInteractor(), ui->qvtkWidget->GetRenderWindow());
     viewer->resetCamera();
-    viewer->addCoordinateSystem (1.0);
     viewer->initCameraParameters ();
     viewer->setBackgroundColor(.7,.7,.7);
     clickResetCamera();
@@ -47,6 +46,8 @@ WindowViewer::WindowViewer(QWidget *parent)
     ui->table_cloud_color->hide();
 
 
+    connect(ui->chkSeeCoordenate, SIGNAL(clicked(bool)), this, SLOT(clickChkSeeCoordenate(bool)));
+
     connect(ui->table_cloud, SIGNAL(cellClicked(int,int)), this, SLOT(clickCloudTable(int,int)));
 
     ui->table_cloud->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -67,6 +68,18 @@ WindowViewer::WindowViewer(QWidget *parent)
     //get camera position
     connect(ui->btn_resetCamera, SIGNAL(clicked()), this, SLOT(clickResetCamera()));
 
+}
+
+
+void WindowViewer::clickChkSeeCoordenate(bool checked){
+
+    if(checked)
+        viewer->addCoordinateSystem (.5);
+
+    else
+        viewer->removeCoordinateSystem();
+
+    ui->qvtkWidget->update();
 }
 
 void WindowViewer::dropEvent(QDropEvent *e)

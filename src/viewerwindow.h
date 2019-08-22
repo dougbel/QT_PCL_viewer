@@ -75,6 +75,8 @@ public Q_SLOTS:
 
     void changeSpinPointSize(int value);
 
+    void clickChkSeeCoordenate(bool checked);
+
 
 protected:
 
